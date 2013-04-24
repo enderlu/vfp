@@ -2,6 +2,7 @@ package vfp
 
 import "strconv"
 import "strings"
+import "unicode/utf8"
 
 import "reflect"
 
@@ -21,6 +22,35 @@ func At(zsubstring, zwholestring string) int {
 	return strings.Index(zwholestring, zsubstring) + 1
 }
 
+//for  single-byte
+func Len(zstr string) int {
+	return len(zstr)
+}
+
+//for utf-8 = 3  single-byte
+func Lenc(zstr string) int {
+	return utf8.RuneCountInString(zstr)
+}
+
+//Lendb is designed for expressions containing double-byte characters
+func Lendb(zstr string) int {
+	//zdouble := (Len(zstr) - Lenc(zstr)) / 2
+	//zsingle := Len(zstr) - zdouble*3
+
+	//return zdouble*2 + zsingle
+
+	znoneSingle := 0
+	zSingle := 0
+	for _, zv := range []rune(zstr) {
+		if utf8.RuneLen(zv) != 1 {
+			znoneSingle++
+		} else {
+			zSingle++
+		}
+	}
+	return znoneSingle*2 + zSingle
+}
+
 func Left(zstr string, zlen int) string {
 	return zstr[0:zlen]
 }
@@ -29,8 +59,12 @@ func Right(zstr string, zlen int) string {
 	return zstr[len(zstr)-zlen:]
 }
 
+//bugs not fixed
 func Atc(zsubstring, zwholestring string) int {
-	return strings.Index(zwholestring, zsubstring)/3 + 1
+	zn := strings.Index(zwholestring, zsubstring)
+
+	zs := Left(zwholestring, zn)
+	return Lenc(zs) + 1
 }
 
 func Leftc(zstr string, zlen int) string {
@@ -66,6 +100,9 @@ func Chrtran(zwhole, zsearch, zreplace string) string {
 		zwhole = strings.Replace(zwhole, zvo, zvn, -1)
 	}
 	return zwhole
+}
+func Chrtranc(zwhole, zsearch, zreplace string) string {
+	return Chrtran(zwhole, zsearch, zreplace)
 }
 
 /*
@@ -149,9 +186,9 @@ func toString(val reflect.Value) string {
 	case reflect.Struct:
 		m, ok := val.Type().MethodByName("String")
 		if ok {
-			str = m.Func.Call([]reflect.Value{val})[0].String()			
-		}else{
-			
+			str = m.Func.Call([]reflect.Value{val})[0].String()
+		} else {
+
 			t := typ
 			v := val
 			str += t.String()
@@ -234,6 +271,9 @@ func Isupper(zstr string) bool {
 func Strtran(zstr, zsearch, zreplace string, zn int) string {
 	return strings.Replace(zstr, zsearch, zreplace, zn)
 }
+func Strtranc(zstr, zsearch, zreplace string, zn int) string {
+	return Strtran(zstr, zsearch, zreplace, zn)
+}
 
 //Returns a character string that contains a specified character expression repeated a specified number of times.
 /*Example:
@@ -257,7 +297,7 @@ func Padl(zstr string, zlen int, zpadchar_arg ...string) string {
 		zpadchar = zpadchar_arg[0]
 	}
 	if zlen > len(zstr) {
-		return Replicate(zpadchar, zlen-len(zstr)) + zstr
+		return Replicate(zpadchar, zlen-Lendb(zstr)) + zstr
 	}
 	return Substrc(zstr, 1, zlen)
 }
@@ -270,10 +310,12 @@ func Padr(zstr string, zlen int, zpadchar_arg ...string) string {
 	}
 
 	if zlen > len(zstr) {
-		return zstr + Replicate(zpadchar, zlen-len(zstr))
+		return zstr + Replicate(zpadchar, zlen-Lendb(zstr))
 	}
+
 	return Substrc(zstr, 1, zlen)
 }
+
 func Padc(zstr string, zlen int, zpadchar_arg ...string) string {
 
 	zpadchar := " "
@@ -282,9 +324,9 @@ func Padc(zstr string, zlen int, zpadchar_arg ...string) string {
 	}
 	if zlen > len(zstr) {
 		zl, zr := 0, 0
-		if int((zlen-len(zstr))/2) != (zlen - len(zstr)) {
-			zl = int((zlen - len(zstr)) / 2)
-			zr = int((zlen-len(zstr))/2) + 1
+		if int((zlen-Lendb(zstr))/2) != (zlen - Lendb(zstr)) {
+			zl = int((zlen - Lendb(zstr)) / 2)
+			zr = int((zlen-Lendb(zstr))/2) + 1
 		}
 		return Replicate(zpadchar, zl) + zstr + Replicate(zpadchar, zr)
 	}
@@ -378,4 +420,25 @@ func Mline(zstr string, zlineno int, zcount_arg ...int) (zret string) {
 		}
 	}
 	return
+}
+
+//Returns true  if the first character are utf-8 in string
+func Isleadbyte(zstr string) bool {
+	return utf8.RuneLen([]rune(zstr)[0]) > 1
+}
+
+//Returns true if there are none-singlebyte characters
+func IsNoneSingleByte(zstr string) bool {
+	return Len(zstr) != Lenc(zstr)
+}
+
+//Converts character expressions 
+//between single-byte, double-byte, UNICODE, and locale-specific representations.
+func Strconv(zstr string, zconvertType int) string {
+	return ""
+}
+
+//Returns the number of times a character expression occurs within another character expression.
+func Occurs(zsubstring ,zwholestring string) int {
+	return strings.Count(zwholestring ,zsubstring)
 }
