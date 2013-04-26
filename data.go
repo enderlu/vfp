@@ -3,12 +3,13 @@ package vfp
 import "odbc"
 
 import "reflect"
-import "time"
+
 import "fmt"
 
 var GPrepareMapCursor map[*odbc.Statement]string = make(map[*odbc.Statement]string)
 var GCursor map[string]*Cursor = make(map[string]*Cursor)
 var GStatementPerConnection map[*odbc.Connection][]*odbc.Statement = make(map[*odbc.Connection][]*odbc.Statement)
+var GCurrentCursor *Cursor
 
 //Establishes a connection to a data source using a connection string.
 func SqlStringConnect(zstr string) (conn *odbc.Connection, err *odbc.ODBCError) {
@@ -50,32 +51,39 @@ func SqlExec(zargs ...interface{}) (rows []*odbc.Row, err *odbc.ODBCError) {
 			delete(GPrepareMapCursor, stmt)
 		}
 
-		if len(zargs) == 2 {
-			panic("arguments count  need 3 or 1 ")
-		}
-
 		if reflect.ValueOf(zargs[0]).Type().String() == "*odbc.Connection" {
 			var zconn *odbc.Connection
 			zconn = zargs[0].(*odbc.Connection)
 			zsql := reflect.ValueOf(zargs[1]).String()
-			zcursor = reflect.ValueOf(zargs[2]).String()
+			if len(zargs) == 3 {
+				zcursor = reflect.ValueOf(zargs[2]).String()
+			}
 			stmt, err = SqlPrepare(zconn, zsql, zcursor)
+
 			delete(GPrepareMapCursor, stmt)
+			if err != nil {
+				return nil, err
+			}
+
 		}
 
 	} else {
-		panic("No SQL statement")
+		panic("Arguments are wrong!")
 	}
 
-	if zcursor == "" {
-		panic("Cursor name is empty")
+	err = stmt.Execute()
+	if err != nil {
+		return nil, err
 	}
-
-	stmt.Execute()
-	rows, err = stmt.FetchAll()
-
-	GCursor[zcursor] = &Cursor{Name: zcursor, Data: rows, Statement: stmt}
-
+	if zcursor != "" {
+		rows, err = stmt.FetchAll()
+		if err == nil {
+			GCursor[zcursor] = &Cursor{Name: zcursor, Data: rows, Statement: stmt, Recno: 1}
+		}
+	} else {
+		stmt.Close()
+		return nil, nil
+	}
 	return
 }
 
@@ -85,6 +93,24 @@ func Field(zi int, zcursorname string) (zname *odbc.Field) {
 	zname, _ = GCursor[zcursorname].Statement.FieldMetadata(zi)
 
 	return
+}
+
+func FieldIndex(zf string, zcursorname_arg ...string) int {
+	zcursorname := ""
+	if len(zcursorname_arg) == 0 {
+		zcursorname = Alias()
+	} else {
+		zcursorname = zcursorname_arg[0]
+	}
+	zfound := -1
+	for zi := 0; zi < Fcount(zcursorname); zi++ {
+		zname, _ := GCursor[zcursorname].Statement.FieldMetadata(zi)
+		if Lower(zname.Name) == Lower(zf) {
+			zfound = zi
+			break
+		}
+	}
+	return zfound
 }
 
 //Returns the number of fields in a table.
@@ -97,9 +123,16 @@ type Cursor struct {
 	Name      string
 	Data      []*odbc.Row
 	Statement *odbc.Statement
+	Recno     int
 }
 
 func (c *Cursor) String() string {
+	fmt.Println("start...")
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Printf("Panicking %s\r\n", e)
+		}
+	}()
 	zstr := ""
 	zstr += "\r\n\r\nCursor " + c.Name + "'s Records:\r\n"
 	zflag := "#Record   "
@@ -136,7 +169,7 @@ func (c *Cursor) String() string {
 		for k := 0; k < zfc; k++ {
 			zfd := Field(k, c.Name)
 			zlen = int(Max(float64(zfd.Size)+ZDISLEN, float64(Lendb(zfd.Name+"("+FieldTypeString(zfd.Type)+")"))+ZDISLEN))
-			zstr += Padr(FieldValue(zfd.Type, k, row), zlen)
+			zstr += Padr(FieldValue(k, row), zlen)
 			zstr += ZVERT
 		}
 		zstr += "\r\n"
@@ -148,25 +181,67 @@ func (c *Cursor) String() string {
 }
 
 //get field value according to it's type ,and return value as string 
-func FieldValue(t int, k int, r *odbc.Row) (zret string) {
-	zret = ""
-	switch t {
-	case -9:
-		zret = r.GetString(k)
-	case -11:
-		zret = string(r.Get(k).([]byte))
-	case 4:
-		zret = Transform(r.GetInt(k))
-	case 2:
-		zret = Transform(r.Get(k).([]uint8))
-	case 6:
-		zret = Transform(r.Get(k).(float64))
+//source could be *odbc.Row or cursor name
+func FieldValue(index interface{}, source_arg ...interface{}) (zret string) {
 
-	case 93:
-		zret = Transform(r.Get(k).(time.Time))
-	default:
-		zret = r.GetString(k)
+	var r *odbc.Row
+	zret = ""
+	zfromcursor := false
+	zname := ""
+	var source interface{}
+
+	if len(source_arg) == 0 {
+		source = Alias()
+	} else {
+		source = source_arg[0]
 	}
+
+	switch source.(type) {
+	case *odbc.Row:
+		r = source.(*odbc.Row)
+	case string:
+		zname = source.(string)
+		r = GCursor[zname].Data[Recno(zname)-1]
+		zfromcursor = true
+	default:
+		r = nil
+	}
+
+	k := -1
+
+	if zfromcursor {
+		switch index.(type) {
+		case string:
+			k = FieldIndex(index.(string), zname)
+		default:
+			k = int(Val(fmt.Sprintf("%v", index)))
+
+		}
+	} else {
+		k = int(Val(fmt.Sprintf("%v", index)))
+	}
+
+	if r != nil {
+		zret = fmt.Sprintf("%v", r.Get(k))
+	}
+	//zret = ""
+	//switch t {
+	//case -9:
+	//	zret = r.GetString(k)
+	//case -11:
+	//	zret = string(r.Get(k).([]byte))
+	//case 4:
+	//	zret = Transform(r.GetInt(k))
+	//case 2:
+	//	zret = Transform(r.Get(k).([]uint8))
+	//case 6:
+	//	zret = Transform(r.Get(k).(float64))
+
+	//case 93:
+	//	zret = Transform(r.Get(k).(time.Time))
+	//default:
+	//	zret = r.GetString(k)
+	//}
 	return
 }
 
@@ -191,6 +266,92 @@ func FieldTypeString(t int) (zret string) {
 	return
 }
 
-func Browse(c *Cursor) {
-	fmt.Println(c)
+func Browse(zcursorname ...string) {
+	var zstr []string
+	if len(zcursorname) == 0 {
+
+		zstr = Aline(GCurrentCursor.String())
+		//fmt.Println(GCurrentCursor)
+	} else {
+		zstr = Aline(GCursor[zcursorname[0]].String())
+		//fmt.Println(GCursor[zcursorname[0]])
+	}
+
+	for _, zl := range zstr {
+		fmt.Println(zl)
+	}
+}
+
+//Returns the number of records in the current or specified table.
+func Reccount(zcursorname ...string) int {
+	if len(zcursorname) == 0 {
+		return len(GCurrentCursor.Data)
+	}
+	return len(GCursor[zcursorname[0]].Data)
+}
+
+//Returns the current record number in the current or specified table.
+func Recno(zcursorname ...string) int {
+	if len(zcursorname) == 0 {
+		return GCurrentCursor.Recno
+	}
+	return GCursor[zcursorname[0]].Recno
+
+}
+
+func Select(zcursorname string) *Cursor {
+	GCurrentCursor = GCursor[zcursorname]
+	return GCurrentCursor
+}
+
+//Moves the record pointer forward or backward in a table.
+func Skip(zn int, zcursorname ...string) *odbc.Row {
+	var c *Cursor
+	if len(zcursorname) == 0 {
+		c = GCurrentCursor
+	} else {
+		c = GCursor[zcursorname[0]]
+	}
+
+	c.Recno += zn
+	if c.Recno < 1 {
+		c.Recno = 1
+	}
+	if c.Recno > Reccount(c.Name) {
+		c.Recno = Reccount(c.Name)
+	}
+
+	return c.Data[c.Recno-1]
+}
+
+//Determines whether the record pointer is positioned past the last record in the current or specified table.
+func Eof(zcursorname ...string) bool {
+	var c string
+	if len(zcursorname) == 0 {
+		c = GCurrentCursor.Name
+	} else {
+		c = GCursor[zcursorname[0]].Name
+	}
+
+	return Reccount(c) == Recno(c)
+}
+
+//Determines whether the record pointer is positioned at the beginning of a table.
+func Bof(zcursorname ...string) bool {
+	var c string
+	if len(zcursorname) == 0 {
+		c = GCurrentCursor.Name
+	} else {
+		c = GCursor[zcursorname[0]].Name
+	}
+
+	return Recno(c) == 1
+}
+
+//Returns the table alias of the current or specified work area.
+func Alias() string {
+	if GCurrentCursor != nil {
+		return GCurrentCursor.Name
+	}
+	return ""
 }

@@ -27,7 +27,13 @@ func Datetime(zargs ...interface{}) string {
 		t = zargs[0].(time.Time)
 	}
 
-	return Strextract(Transform(t), ".", ".", 0)
+	return Transform(Year(t)) + "-" +
+		Transform(Month(t)) + "-" + 
+		Transform(Day(t)) + " " + 
+		Transform(Hour(t)) + ":"  + 
+		Transform(Minute(t)) + ":"  + 
+		Transform(Sec(t)) 
+	//return Strextract(Transform(t), ".", ".", 0)
 
 }
 

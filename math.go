@@ -2,7 +2,7 @@ package vfp
 
 import "math"
 import "math/rand"
-
+import "strconv"
 func Abs(zfloat float64) float64 {
 	return math.Abs(zfloat)
 }
@@ -112,4 +112,9 @@ func Avg(zf_args []float64) float64 {
 	}
 
 	return Sum(zf_args) / float64(len(zf_args))
+}
+
+func Val(zd string) float64{
+	zr ,_:=strconv.ParseFloat(zd ,64)
+	return zr
 }
