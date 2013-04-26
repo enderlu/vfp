@@ -167,3 +167,30 @@ func Floor(z float64) float64 {
 	}
 	return float64(Int(z))
 }
+
+//Returns a numeric expression rounded to a specified number of decimal places.
+/*Example
+fmt.Println("round:",
+	vfp.Round(10.4545, 2),
+	vfp.Round(10.4545, 1),
+	vfp.Round(-10.5545, 0))//round: 10.45 10.5 -11
+
+*/
+func Round(zval float64, zdecimal float64) float64 {
+	zsign := Sign(zval)
+
+	zval = Abs(zval)
+	zseed := float64(math.Pow(10, zdecimal))
+	zval = zval * zseed
+
+	zint := int(zval)
+
+	if zval-float64(zint) >= 0.5 {
+		zval += 1
+	}
+
+	zval = float64(int(zval))
+	zval /= zseed
+
+	return zval * float64(zsign)
+}
