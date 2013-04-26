@@ -3,6 +3,8 @@ package vfp
 import "math"
 import "math/rand"
 import "strconv"
+import "fmt"
+
 func Abs(zfloat float64) float64 {
 	return math.Abs(zfloat)
 }
@@ -114,7 +116,54 @@ func Avg(zf_args []float64) float64 {
 	return Sum(zf_args) / float64(len(zf_args))
 }
 
-func Val(zd string) float64{
-	zr ,_:=strconv.ParseFloat(zd ,64)
+func Val(zd string) float64 {
+	zr, _ := strconv.ParseFloat(zd, 64)
 	return zr
+}
+
+//Returns the next highest integer that is greater than or equal to the specified numeric expression.
+/*
+Ceiling(10.9)  // Displays 11
+
+Ceiling(-10.9)  // Displays -10
+
+Ceiling(10.0)  // Displays 10
+
+Ceiling(-10.0) // Displays -10
+*/
+func Ceiling(z float64) float64 {
+	if z > 0 && z > float64(Int(z)) {
+		return float64(Int(z) + 1)
+	}
+	return float64(Int(z))
+}
+
+//Returns a numeric value of 1, –1, or 0 if the specified numeric expression evaluates to a positive, negative, or 0 value.
+func Sign(z interface{}) int {
+	zv := Val(fmt.Sprintf("%v", z))
+	if zv > 0 {
+		return 1
+	}
+	if zv < 0 {
+		return -1
+	}
+	return 0
+
+}
+
+//Returns the nearest integer that is less than or equal to the specified numeric expression.
+/*
+Floor(10.9)  // Displays 10
+
+Floor(-10.9)  // Displays -11
+
+Floor(10.0)  // Displays 10
+
+Floor(-10.0) // Displays -10
+*/
+func Floor(z float64) float64 {
+	if z < 0 && z < float64(Int(z)) {
+		return float64(Int(z) - 1)
+	}
+	return float64(Int(z))
 }

@@ -84,6 +84,8 @@ func SqlExec(zargs ...interface{}) (rows []*odbc.Row, err *odbc.ODBCError) {
 		stmt.Close()
 		return nil, nil
 	}
+
+	Select(zcursor)
 	return
 }
 
