@@ -357,3 +357,27 @@ func Alias() string {
 	}
 	return ""
 }
+
+//Moves the record pointer to the specified record number. There are multiple versions of the syntax.
+//if zrec over range 1~reccount ,it means go top or go bottom
+func GoRec(zrec int ,zcursorname ...string) *odbc.Row {
+	zname := ""
+	if len(zcursorname) == 0{
+		zname = Alias()
+	}else{
+		zname = zcursorname[0]
+	}
+	
+	c := GCursor[zname]
+	c.Recno = zrec
+		
+	if c.Recno < 1 {
+		c.Recno = 1
+	}
+	if c.Recno > Reccount(c.Name) {
+		c.Recno = Reccount(c.Name)
+	}
+	
+	return c.Data[c.Recno-1]	
+	
+}

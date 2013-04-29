@@ -143,3 +143,17 @@ func Fullpath(zfile string) string {
 	//os.Args[0] 当前执行程序的文件路径
 	return zp
 }
+
+
+//Save objects to file
+func Saveto(zfile string ,zobjs ...interface{}) bool {
+	return true
+}
+
+//Retrieves variables and variable arrays saved in a variable file or a memo field and places them into memory.
+func Restorefrom(zfile string) bool {
+	return true
+}
+
+
+

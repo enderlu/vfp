@@ -345,6 +345,7 @@ func Alltrim(zstr string, zargs ...string) string {
 		}
 	} else {
 		zc = " "
+
 	}
 	return strings.Trim(zstr, zc)
 }
@@ -439,6 +440,14 @@ func Strconv(zstr string, zconvertType int) string {
 }
 
 //Returns the number of times a character expression occurs within another character expression.
-func Occurs(zsubstring ,zwholestring string) int {
-	return strings.Count(zwholestring ,zsubstring)
+func Occurs(zsubstring, zwholestring string) int {
+	return strings.Count(zwholestring, zsubstring)
+}
+
+//Returns from a character expression a string capitalized as appropriate for proper names.
+/*
+Proper("we are good ")//We Are Good
+*/
+func Proper(z string) string {
+	return strings.Title(z)
 }

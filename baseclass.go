@@ -38,3 +38,8 @@ func Isproperty(zobj interface{}, zname string) bool {
 	_, ok := reflect.ValueOf(zobj).Type().FieldByName(zname)
 	return ok
 }
+
+
+func Vartype(zobj interface{}) string {
+	return reflect.TypeOf(zobj).String()
+}
