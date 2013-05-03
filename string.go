@@ -4,7 +4,13 @@ import "strconv"
 import "strings"
 import "unicode/utf8"
 
+import "fmt"
 import "reflect"
+
+import (
+	"bytes"
+	"encoding/binary"
+)
 
 func Str(znum float64, zlen int, zdecimal int) string {
 	return strconv.FormatFloat(znum, 'f', zdecimal, 64)[0:zlen]
@@ -77,11 +83,11 @@ func Rightc(zstr string, zlen int) string {
 	return string(zs[len(zs)-zlen:])
 }
 
-/*Replaces each character in a character expression 
-that matches a character in a second character expression 
+/*Replaces each character in a character expression
+that matches a character in a second character expression
 with the corresponding character in a third character expression.
 
-fmt.Println("Chrtran:", vfp.Chrtran("ABCDEF", "ACE", "XYZQRST")) 
+fmt.Println("Chrtran:", vfp.Chrtran("ABCDEF", "ACE", "XYZQRST"))
 
 Result:XBYDZF
 */
@@ -213,7 +219,7 @@ func toString(val reflect.Value) string {
 	return "Transform: can't happen"
 }
 
-//Retrieves a string between two delimiters. 
+//Retrieves a string between two delimiters.
 /*Example:
 Strextract("<apple>","<",">" ,1)
 */
@@ -265,9 +271,9 @@ func Isupper(zstr string) bool {
 	return Asc(zv) >= Asc("A") && Asc(zv) <= Asc("Z")
 }
 
-//Searches a character expression or memo field for a second character expression or memo 
-//field and replaces each occurrence with a third character expression or memo field. 
-//You can specify where the replacement begins and how many replacements are made. 
+//Searches a character expression or memo field for a second character expression or memo
+//field and replaces each occurrence with a third character expression or memo field.
+//You can specify where the replacement begins and how many replacements are made.
 func Strtran(zstr, zsearch, zreplace string, zn int) string {
 	return strings.Replace(zstr, zsearch, zreplace, zn)
 }
@@ -284,7 +290,7 @@ func Replicate(zstr string, ztimes int) string {
 }
 
 /*
-Returns a string from an expression, 
+Returns a string from an expression,
 padded with spaces or characters to a specified length on the left or right sides, or both.
 */
 /*Example:
@@ -334,7 +340,7 @@ func Padc(zstr string, zlen int, zpadchar_arg ...string) string {
 }
 
 /*
-Removes all leading and trailing spaces or parsing characters from the specified character 
+Removes all leading and trailing spaces or parsing characters from the specified character
 expression, or all leading and trailing zero (0) bytes from the specified binary expression.
 */
 func Alltrim(zstr string, zargs ...string) string {
@@ -351,7 +357,7 @@ func Alltrim(zstr string, zargs ...string) string {
 }
 
 /*
-Removes all leading spaces or parsing characters from the specified character expression, 
+Removes all leading spaces or parsing characters from the specified character expression,
 or all leading zero (0) bytes from the specified binary expression.
 */
 func Ltrim(zstr string, zargs ...string) string {
@@ -367,7 +373,7 @@ func Ltrim(zstr string, zargs ...string) string {
 }
 
 /*
-Removes all trailing spaces or parsing characters from the specified character expression, 
+Removes all trailing spaces or parsing characters from the specified character expression,
 or all trailing zero (0) bytes from the specified binary expression.
 */
 func Rtrim(zstr string, zargs ...string) string {
@@ -433,7 +439,7 @@ func IsNoneSingleByte(zstr string) bool {
 	return Len(zstr) != Lenc(zstr)
 }
 
-//Converts character expressions 
+//Converts character expressions
 //between single-byte, double-byte, UNICODE, and locale-specific representations.
 func Strconv(zstr string, zconvertType int) string {
 	return ""
@@ -450,4 +456,46 @@ Proper("we are good ")//We Are Good
 */
 func Proper(z string) string {
 	return strings.Title(z)
+}
+
+//Provides evaluation of a character expression.
+func TextMerge(zexpr string, zargs ...interface{}) string {
+	return ""
+}
+
+//Converts a numeric value to a binary character representation.
+/*Example
+
+fmt.Printf("ctobin:%x\n", Bintoc(128, "b"))
+fmt.Printf("ctobin:%x\n", Bintoc(128, "1rs"))
+fmt.Printf("ctobin:%x\n", Bintoc(int8(127)))
+fmt.Printf("ctobin:%x\n", Bintoc(int64(127)))
+fmt.Printf("ctobin:%x\n", Bintoc(float64(127)))
+
+*/
+func Bintoc(znv interface{}, zopt_arg ...string) []byte {
+	zbuf := new(bytes.Buffer)
+
+	zopt := ""
+	if len(zopt_arg) > 0 {
+		zopt = Lower(zopt_arg[0])
+		zv := fmt.Sprintf("%v", znv)
+		switch zopt {
+		case "b":
+			znv = float64(Val(zv))
+		case "4rs":
+			znv = int32(Val(zv))
+		case "8rs":
+			znv = int64(Val(zv))
+		case "2rs":
+			znv = int16(Val(zv))
+		case "1rs":
+			znv = int8(Val(zv))
+		}
+	}
+	err := binary.Write(zbuf, binary.LittleEndian, znv)
+	if err != nil {
+		panic("binary.Write failed:" + err.Error())
+	}
+	return zbuf.Bytes()
 }
