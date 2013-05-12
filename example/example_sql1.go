@@ -15,7 +15,7 @@ func main() {
 											[OptimisticLockField]      ,
 											[GCRecord] from curr `, "mycursor")
 
-	vfp.Browse(vfp.GCursor["mycursor"])
+	vfp.Browse("mycursor")
 	defer vfp.SqlDisConnect(conn)
 
 }

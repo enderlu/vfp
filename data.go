@@ -89,6 +89,25 @@ func SqlExec(zargs ...interface{}) (rows []*odbc.Row, err *odbc.ODBCError) {
 	return
 }
 
+func Usein(zalias_arg ...string) bool {
+	zalias := ""
+	if len(zalias_arg) == 0 {
+		zalias = Alias()
+	} else {
+		zalias = zalias_arg[0]
+	}
+	if Used(zalias) {
+		delete(GCursor, zalias)
+		return true
+	}
+
+	return false
+}
+func Used(zalias string) bool {
+	_, ok := GCursor[zalias]
+	return ok
+}
+
 //Returns the name of a field, referenced by number, in a table.
 func Field(zi int, zcursorname string) (zname *odbc.Field) {
 
@@ -129,7 +148,7 @@ type Cursor struct {
 }
 
 func (c *Cursor) String() string {
-	fmt.Println("start...")
+
 	defer func() {
 		if e := recover(); e != nil {
 			fmt.Printf("Panicking %s\r\n", e)
@@ -182,7 +201,7 @@ func (c *Cursor) String() string {
 	return zstr
 }
 
-//get field value according to it's type ,and return value as string 
+//get field value according to it's type ,and return value as string
 //source could be *odbc.Row or cursor name
 func FieldValue(index interface{}, source_arg ...interface{}) (zret string) {
 
@@ -360,24 +379,24 @@ func Alias() string {
 
 //Moves the record pointer to the specified record number. There are multiple versions of the syntax.
 //if zrec over range 1~reccount ,it means go top or go bottom
-func GoRec(zrec int ,zcursorname ...string) *odbc.Row {
+func GoRec(zrec int, zcursorname ...string) *odbc.Row {
 	zname := ""
-	if len(zcursorname) == 0{
+	if len(zcursorname) == 0 {
 		zname = Alias()
-	}else{
+	} else {
 		zname = zcursorname[0]
 	}
-	
+
 	c := GCursor[zname]
 	c.Recno = zrec
-		
+
 	if c.Recno < 1 {
 		c.Recno = 1
 	}
 	if c.Recno > Reccount(c.Name) {
 		c.Recno = Reccount(c.Name)
 	}
-	
-	return c.Data[c.Recno-1]	
-	
+
+	return c.Data[c.Recno-1]
+
 }

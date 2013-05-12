@@ -4,6 +4,7 @@ import "os"
 
 import "os/exec"
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -28,7 +29,7 @@ func Adir(zdir string) ([]os.FileInfo, error) {
 	return zl, err
 }
 
-func Strtofile(zstr, zfile string) error {
+func Strtofile(zstrArg interface{}, zfile string) error {
 	//file, err := os.Create(zfile)
 	//if err != nil {
 	//	return err
@@ -36,8 +37,16 @@ func Strtofile(zstr, zfile string) error {
 	//defer file.Close()
 	//file.WriteString(zstr)
 	//return nil
-
-	return ioutil.WriteFile(zfile, []byte(zstr), os.ModeAppend)
+	var zstr []byte
+	switch zstrArg.(type) {
+	case string:
+		zstr = []byte(zstrArg.(string))
+	case []byte:
+		zstr = zstrArg.([]byte)
+	default:
+		zstr = []byte(fmt.Sprintf("%v", zstrArg))
+	}
+	return ioutil.WriteFile(zfile, zstr, os.ModeAppend)
 }
 
 //Returns the contents of a file as a []byte.
@@ -72,7 +81,7 @@ func Justpath(zpath string) string {
 /*Example:
 print ww.dat
 
-fmt.Println("justfname:", vfp.Justfname("c:\\sek\\ww.dat"))	
+fmt.Println("justfname:", vfp.Justfname("c:\\sek\\ww.dat"))
 */
 func Justfname(zpath string) string {
 	_, zv := filepath.Split(zpath)
@@ -123,7 +132,7 @@ func File(zfile string) bool {
 	return sourceExist(zfile)
 }
 
-//Locates the specified directory. 
+//Locates the specified directory.
 func Directory(zdir string) bool {
 	return sourceExist(zdir)
 }
@@ -144,9 +153,8 @@ func Fullpath(zfile string) string {
 	return zp
 }
 
-
 //Save objects to file
-func Saveto(zfile string ,zobjs ...interface{}) bool {
+func Saveto(zfile string, zobjs ...interface{}) bool {
 	return true
 }
 
@@ -154,6 +162,3 @@ func Saveto(zfile string ,zobjs ...interface{}) bool {
 func Restorefrom(zfile string) bool {
 	return true
 }
-
-
-

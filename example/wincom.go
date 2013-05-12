@@ -9,6 +9,7 @@ import (
 //调用proj1.mycom的定义体
 func main() {
 	CoInitialize(0)
+	defer CoUninitialize()
 
 	handle, err := CreateObject(`proj1.mycom`)
 	if err == nil {
@@ -19,7 +20,7 @@ func main() {
 	} else {
 		fmt.Println(err)
 	}
-	CoUninitialize()
+
 }
 
 type IMycomVtbl struct {
@@ -56,7 +57,7 @@ func (obj *IMycom) Gettime1() int {
 }
 
 type DBLSTR struct {
-	Data [2500]uint16
+	Data [40]uint16
 }
 
 func (b DBLSTR) String() string {
