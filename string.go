@@ -3,7 +3,7 @@ package vfp
 import "strconv"
 import "strings"
 import "unicode/utf8"
-
+import "github.com/axgle/mahonia"
 import "fmt"
 import "reflect"
 
@@ -441,8 +441,76 @@ func IsNoneSingleByte(zstr string) bool {
 
 //Converts character expressions
 //between single-byte, double-byte, UNICODE, and locale-specific representations.
+/*
+1 Converts single-byte characters in cExpression to double-byte characters.
+
+  Supported for Locale ID only (specified with the nRegionalIdentifier or nRegionalIDType parameters).
+
+2 Converts double-byte characters in cExpression to single-byte characters.
+
+  Supported for Locale ID only (specified with the nRegionalIdentifier or nRegionalIDType parameters).
+
+3 Converts double-byte Katakana characters in cExpression to double-byte Hiragana characters.
+
+ Supported for Locale ID only (specified with the nRegionalIdentifier or nRegionalIDType parameters).
+
+4 Converts double-byte Hiragana characters in cExpression to double-byte Katakana characters.
+
+  Supported for Locale ID only (specified with the nRegionalIdentifier or nRegionalIDType parameters).
+
+5 Converts double-byte characters to UNICODE (wide characters).
+
+6 Converts UNICODE (wide characters) to double-byte characters.
+
+7 Converts cExpression to locale-specific lowercase.
+
+  Supported for Locale ID only (specified with the nRegionalIdentifier or nRegionalIDType parameters).
+
+8 Converts cExpression to locale-specific uppercase.
+
+  Supported for Locale ID only (specified with the nRegionalIdentifier or nRegionalIDType parameters).
+
+
+
+
+
+13 Converts single-byte characters in cExpression to encoded base64 binary.
+
+14 Converts base64 encoded data in cExpression to original unencoded data.
+
+15 Converts single-byte characters in cExpression to encoded hexBinary.
+
+16 Converts single-byte characters in cExpression to decoded hexBinary
+
+*/
 func Strconv(zstr string, zconvertType int) string {
-	return ""
+
+	zcharset := ""
+
+	switch zconvertType {
+	case 9: //9 Converts double-byte characters in cExpression to UTF-8
+		zcharset = getCurrentCP()
+		dec := mahonia.NewDecoder(zcharset)
+		return dec.ConvertString(zstr)
+	case 10: //10 Converts Unicode characters in cExpression to UTF-8
+		zcharset = "utf16"
+		dec := mahonia.NewDecoder(zcharset)
+		return dec.ConvertString(zstr)
+
+	case 11: //11 Converts UTF-8 characters in cExpression to double-byte characters.
+		zcharset = getCurrentCP()
+		enc := mahonia.NewEncoder(zcharset)
+		return enc.ConvertString(zstr)
+	case 12: //12 Converts UTF-8 characters in cExpression to UNICODE characters.
+		zcharset = "utf16"
+		enc := mahonia.NewEncoder(zcharset)
+		return enc.ConvertString(zstr)
+
+	}
+	return zstr
+}
+func getCurrentCP() string {
+	return "gbk"
 }
 
 //Returns the number of times a character expression occurs within another character expression.
