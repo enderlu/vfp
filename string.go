@@ -12,6 +12,8 @@ import (
 	"encoding/binary"
 )
 
+var gsoundFile string = ""
+
 func Str(znum float64, zlen int, zdecimal int) string {
 	return strconv.FormatFloat(znum, 'f', zdecimal, 64)[0:zlen]
 }
@@ -21,7 +23,12 @@ func Substr(zstr string, zstart, zlen int) string {
 }
 
 func Substrc(zstr string, zstart, zlen int) string {
-	return string([]rune(zstr)[zstart-1 : zstart+zlen-1])
+	zend := zstart + zlen - 1
+	zolen := len([]rune(zstr))
+	if zend > zolen {
+		zend = zolen
+	}
+	return string([]rune(zstr)[zstart-1 : zend])
 }
 
 func At(zsubstring, zwholestring string) int {
@@ -121,8 +128,40 @@ func Asc(zstr string) int {
 /*
 Returns the character associated with the specified numeric unicode code.
 */
+/*Example:
+
+SetBellTo(`C:\Kugou\Listen\tn.mp3`)
+Chr(7)
+Wait()
+
+*/
 func Chr(zcode int) string {
+	if zcode == 7 {
+		if At("window", OS()) > 0 {
+			if gsoundFile != "" {
+				MCISendString("play " + Md5(gsoundFile))
+			} else {
+				PlaySound("xxxx", 0, 0)
+			}
+		}
+
+	}
 	return string(zcode)
+}
+
+/*Specifies a waveform sound to play when the bell is rung.
+zWAVFileName can include a path to the waveform sound.
+*/
+func SetBellTo(zWAVFileName string) {
+	zcmd := ""
+	if gsoundFile != "" {
+		zcmd := "close " + Md5(gsoundFile)
+		MCISendString(zcmd)
+	}
+	gsoundFile = zWAVFileName
+
+	zcmd = `open "` + gsoundFile + `" alias ` + Md5(gsoundFile)
+	MCISendString(zcmd)
 }
 
 /*
@@ -302,7 +341,7 @@ func Padl(zstr string, zlen int, zpadchar_arg ...string) string {
 	if len(zpadchar_arg) > 0 {
 		zpadchar = zpadchar_arg[0]
 	}
-	if zlen > len(zstr) {
+	if zlen > Lendb(zstr) {
 		return Replicate(zpadchar, zlen-Lendb(zstr)) + zstr
 	}
 	return Substrc(zstr, 1, zlen)
@@ -315,7 +354,7 @@ func Padr(zstr string, zlen int, zpadchar_arg ...string) string {
 		zpadchar = zpadchar_arg[0]
 	}
 
-	if zlen > len(zstr) {
+	if zlen > Lendb(zstr) {
 		return zstr + Replicate(zpadchar, zlen-Lendb(zstr))
 	}
 
@@ -328,7 +367,7 @@ func Padc(zstr string, zlen int, zpadchar_arg ...string) string {
 	if len(zpadchar_arg) > 0 {
 		zpadchar = zpadchar_arg[0]
 	}
-	if zlen > len(zstr) {
+	if zlen > Lendb(zstr) {
 		zl, zr := 0, 0
 		if int((zlen-Lendb(zstr))/2) != (zlen - Lendb(zstr)) {
 			zl = int((zlen - Lendb(zstr)) / 2)

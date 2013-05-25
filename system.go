@@ -5,6 +5,15 @@ import "os"
 import "crypto/md5"
 import "fmt"
 import "github.com/axgle/service"
+import "syscall"
+import "bufio"
+
+func Wait() string {
+	reader := bufio.NewReader(os.Stdin)
+	zr, _, _ := reader.ReadLine()
+	zline := string(zr)
+	return zline
+}
 
 //Run
 func Run(zfile string, zwait_arg ...bool) (zerr error) {
@@ -102,5 +111,23 @@ func Md5(zstrArg interface{}) string {
 
 //Returns the name and version number of the operating system
 func OS() string {
-	return ""
+	return "window"
+}
+
+func MustLoadLibrary(name string) uintptr {
+	lib, err := syscall.LoadLibrary(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return uintptr(lib)
+}
+
+func MustGetProcAddress(lib uintptr, name string) uintptr {
+	addr, err := syscall.GetProcAddress(syscall.Handle(lib), name)
+	if err != nil {
+		panic(err)
+	}
+
+	return uintptr(addr)
 }
