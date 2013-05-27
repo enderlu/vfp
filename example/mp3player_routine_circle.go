@@ -12,6 +12,8 @@ var zfiles []os.FileInfo
 var zdir string
 var changed bool
 var zx string = "1"
+var zloop bool = false
+var zsingle bool = false
 
 func main() {
 	fmt.Println("X6.M Playing sound...")
@@ -67,6 +69,20 @@ func commandList() {
 			MCISendString("play " + Md5(zsong))
 		case "x":
 			break
+		case "c":
+			zloop = !zloop
+			if zloop {
+				fmt.Println("loop play...")
+			} else {
+				fmt.Println("in order play...")
+			}
+		case "d":
+			zsingle = !zsingle
+			if zsingle {
+				fmt.Println("single play...")
+			} else {
+				fmt.Println("whole play...")
+			}
 		case "p":
 			fmt.Println("\nreplay song ", zsong)
 			PlayX(zsong)
@@ -82,7 +98,7 @@ func commandList() {
 			}
 		}
 
-		fmt.Print("press song number or r = resume ,s = stop ,l = list song ,x = exit :")
+		fmt.Print("press song number or c=loop ,d=single ,r = resume ,s = stop ,l = list song ,x = exit :")
 
 		for (zx == "s" && !changed) || (MCIStatus(Md5(zsong)) != "stopped" && !changed) {
 			time.Sleep(100 * time.Millisecond)
@@ -90,10 +106,21 @@ func commandList() {
 		}
 
 		if zx != "s" && !changed {
-			zid++
+			if !zsingle {
+				zid++
+			} else {
+				if !zloop {
+					break
+				}
+			}
 
 			if !(zid >= 0 && zid < len(zfiles)) {
-				zid = 0
+				if zloop {
+					zid = 0
+				} else {
+					break
+				}
+
 			}
 			zx = Transform(zid + 1)
 		}
