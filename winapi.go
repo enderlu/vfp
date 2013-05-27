@@ -56,6 +56,18 @@ func MCISendString(zcmd string) int {
 	return int(zret)
 }
 
+func MCIStatus(zsong string) string {
+	zs := new(Mst)
+	zdd := 20
+	zcmd := "status " + zsong + " mode"
+	syscall.Syscall6(mciSendString, 4,
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(zcmd))),
+		uintptr(unsafe.Pointer(zs)),
+		uintptr(unsafe.Pointer(&zdd)), uintptr(0), 0, 0)
+
+	return Strtran(string(zs.Data[0:20]), Chr(0), "", -1)
+}
+
 func PlayX(zfile string) {
 	MCISendString("close " + Md5(zfile))
 	MCISendString(`open "` + zfile + `" alias ` + Md5(zfile))
@@ -72,4 +84,8 @@ func PlaySound(pszSound string, hmod HMODULE, fdwSound DWORD) BOOL {
 		uintptr(hmod), uintptr(fdwSound))
 	return BOOL(zret)
 
+}
+
+type Mst struct {
+	Data [20]byte
 }
