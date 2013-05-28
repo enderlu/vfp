@@ -63,7 +63,8 @@ func commandList() {
 		case "s":
 			fmt.Println("stopping song.. ")
 			MCISendString("stop " + Md5(zsong))
-
+		case "!":
+			fmt.Println("Song end.. ")
 		case "r":
 			fmt.Println("resume song.. ")
 			MCISendString("play " + Md5(zsong))
@@ -100,7 +101,7 @@ func commandList() {
 
 		fmt.Print("press song number or c=loop ,d=single ,r = resume ,s = stop ,l = list song ,x = exit :")
 
-		for (zx == "s" && !changed) || (MCIStatus(Md5(zsong)) != "stopped" && !changed) {
+		for zx == "!" || (zx == "s" && !changed) || (MCIStatus(Md5(zsong)) != "stopped" && !changed) {
 			time.Sleep(100 * time.Millisecond)
 
 		}
@@ -110,7 +111,10 @@ func commandList() {
 				zid++
 			} else {
 				if !zloop {
-					break
+					changed = false
+					zx = "!"
+					continue
+					//break
 				}
 			}
 
@@ -118,7 +122,10 @@ func commandList() {
 				if zloop {
 					zid = 0
 				} else {
-					break
+					changed = false
+					zx = "!"
+					continue
+					//break
 				}
 
 			}
