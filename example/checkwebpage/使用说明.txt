@@ -1,0 +1,20 @@
+配置url.txt ，设置搜索页面
+配置searh.txt设置搜索文字
+配置song.txt,设置找到指定文字后播放的歌曲（绝对路径）
+
+
+文件解释：
+install.bat  安装服务 
+remove.bat 反安装服务 
+
+start.bat 开始服务
+stop.bat 停止服务
+
+
+如果服务正在运行，先点击stop.bat ,再点击remove.bat
+
+
+执行例子：1.点击install.bat -> 2.点击start.bat
+
+
+重新设置url.txt ,search.txt ,song.txt需要重启服务 stop.bat->start.bat
