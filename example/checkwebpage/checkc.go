@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/axgle/mahonia"
+	//"github.com/axgle/service"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,30 +28,6 @@ func checkError(err interface{}) {
 		log.Fatal(err)
 	}
 }
-
-//func main() {
-//	zx, _ := ioutil.ReadFile("install.txt")
-
-//	zsound_b, _ := ioutil.ReadFile("sound.txt")
-//	zsound = string(zsound_b)
-//	if len(zx) <= 6 {
-//		vfp.XServiceAdd("m3",
-//			"check word from web page",
-//			"check word from web page",
-//			func() error {
-//				//go Main_Sit()
-//				go vfp.PlayX(zsound)
-//				return nil
-//			},
-//			func() error { return nil })
-//		//vfp.XServiceStart("m3")
-//		vfp.Strtofile("installed", "install.txt")
-//	} else {
-
-//		vfp.XServiceRemove("m3")
-//		vfp.Strtofile("", "install.txt")
-//	}
-//}
 func Main_Sit() {
 	zpath := vfp.Addbs(vfp.Justpath(vfp.Program()))
 	zsound_b, _ := ioutil.ReadFile(zpath + `sound.txt`)
@@ -124,8 +101,18 @@ func DisplayUrl(zurl string) {
 		decoder := mahonia.NewDecoder(zcode)
 		_, buf_line, _ := decoder.Translate(buf, true)
 
-		if At(zw, string(buf_line)) > 0 {
-			fmt.Println("found! ", zw)
+		zfound := false
+		zwords := vfp.Aline(zw)
+		zv := ""
+		for _, zv = range zwords {
+			if At(zv, string(buf_line)) > 0 {
+				zfound = true
+				break
+			}
+		}
+
+		if zfound {
+			fmt.Println("found! ", zv)
 			go vfp.PlayX(zsound)
 			//MessageBox("查找结果", "找到了\n"+zw, 0)
 			break
