@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/axgle/mahonia"
 	//"github.com/axgle/service"
+	"html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,9 +16,10 @@ import (
 	"unsafe"
 	"vfp"
 )
+import "math/rand"
 
 var zurl, zw, zsound string
-
+var zpath string = vfp.Addbs(vfp.Justpath(vfp.Program()))
 var (
 	user32, _     = syscall.LoadLibrary("user32.dll")
 	messageBox, _ = syscall.GetProcAddress(user32, "MessageBoxW")
@@ -28,8 +30,17 @@ func checkError(err interface{}) {
 		log.Fatal(err)
 	}
 }
+func readStr(zsound_b []byte) (zsound string) {
+	zsound = ""
+	if zsound_b[0] == 239 && zsound_b[1] == 187 && zsound_b[2] == 191 {
+		zsound = string(zsound_b[3:])
+	} else {
+		zsound = string(zsound_b)
+	}
+	return
+}
 func Main_Sit() {
-	zpath := vfp.Addbs(vfp.Justpath(vfp.Program()))
+
 	zsound_b, _ := ioutil.ReadFile(zpath + `sound.txt`)
 	if zsound_b[0] == 239 && zsound_b[1] == 187 && zsound_b[2] == 191 {
 		zsound = string(zsound_b[3:])
@@ -64,6 +75,7 @@ func Wait() string {
 }
 
 func DisplayUrl(zurl string) {
+
 	for {
 		fmt.Println("\nchecking ...", zurl)
 		r, err1 := http.Get(zurl)
@@ -104,23 +116,58 @@ func DisplayUrl(zurl string) {
 		zfound := false
 		zwords := vfp.Aline(zw)
 		zv := ""
+		zfound_word := ""
+		znot_found := ""
+		//zh, zn := 0, 0
+		zset := false
 		for _, zv = range zwords {
+			//zh++
 			if At(zv, string(buf_line)) > 0 {
+				if zfound {
+					zfound_word = zfound_word + "," + zv
+				} else {
+					zfound_word = zfound_word + zv
+				}
 				zfound = true
-				break
+				//zn++
+			} else {
+				if zset {
+					znot_found = znot_found + "," + zv
+				} else {
+					znot_found = znot_found + zv
+				}
+				zset = true
 			}
+		}
+		zmind := ""
+		if znot_found != "" {
+			zmind = "未找到:" + znot_found + "\n未找全，隔10分钟继续下一轮查找\n"
+		} else {
+			zmind = "已经找全了，隔10分钟继续下一轮查找\n"
 		}
 
 		if zfound {
 			fmt.Println("found! ", zv)
 			go vfp.PlayX(zsound)
+
+			zuin_b, _ := vfp.Filetostr(zpath + "uin.txt")
+			zun_b, _ := vfp.Filetostr(zpath + "un.txt")
+			zpass_b, _ := vfp.Filetostr(zpath + "pass.txt")
+			SendQQMsg(readStr(zuin_b), readStr(zpass_b), readStr(zun_b),
+				"x6.GoLang~\n"+
+					fmt.Sprintf("%v\n", vfp.Datetime())+
+					"找到: "+zfound_word+" \n"+
+					zmind+
+					`url: `+html.EscapeString(zurl))
 			//MessageBox("查找结果", "找到了\n"+zw, 0)
-			break
+			//if zn == zh {
+			//	break
+			//}
 
 		} else {
 			fmt.Println("can not find ", zw)
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(10 * 60 * time.Second)
 	}
 
 }
@@ -135,4 +182,62 @@ func MessageBox(caption, text string, style uintptr) (result int) {
 		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(caption))),
 		style, 0, 0)
 	return int(ret)
+}
+
+func SendQQMsg(zuin, zpass_md5, zun, zmsg string) error {
+	var zseed int64 = time.Now().Unix()
+
+	host := "http://121.14.102.159:14000"
+	posttype := `text/plain;charset=UTF-8`
+	rand.Seed(zseed)
+	xrand := fmt.Sprintf("%v", rand.Intn(200))
+
+	poststring := `VER=1.4&CON=1&CMD=Login&SEQ=` + xrand + `&UIN=` + zuin +
+		`&PS=` + zpass_md5 +
+		`&M5=1&LG=0&LC=812822641C978097&GD=EX4RLS2GFYGR6T1R&CKE=`
+
+	r, err := http.Post(host, posttype, strings.NewReader(poststring))
+	if err != nil {
+		return err
+	}
+	rand.Seed(zseed)
+	xrand = fmt.Sprintf("%v", rand.Intn(200))
+
+	poststring = `VER=1.4&CMD=CLTMSG&SEQ=` + xrand + `&UIN=` + zuin +
+		`&UN=` + zun + `&MG=` + zmsg + xrand
+	r, err = http.Post(host, posttype, strings.NewReader(poststring))
+	if err != nil {
+		return err
+	}
+	//rand.Seed(zseed)
+	//xrand = fmt.Sprintf("%v", rand.Intn(200))
+
+	//poststring = `VER=1.4&CON=1&CMD=Logout&SEQ=` + xrand + `&UIN=` + zuin + `&SID=&XP=C4CA4238A0B92382`
+	//r, err = http.Post(host, posttype, strings.NewReader(poststring))
+	//if err != nil {
+	//	return err
+	//}
+
+	if 1 == 0 {
+		fmt.Println(ReadBody(r))
+	}
+
+	return nil
+}
+
+func ReadBody(r *http.Response) string {
+	bs := make([]byte, 5056)
+	defer r.Body.Close()
+	var buf []byte
+
+	n, _ := r.Body.Read(bs)
+	zi := 0
+	for n > 0 {
+		if n > 0 {
+			zi++
+			buf = append(buf, bs[:n]...)
+		}
+		n, _ = r.Body.Read(bs)
+	}
+	return string(buf)
 }
