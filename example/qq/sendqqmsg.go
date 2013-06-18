@@ -45,7 +45,7 @@ import "math/rand"
 
 func main() {
 	zurl := `http://tieba.baidu.com/f?ie=utf-8&kw=%E6%B1%82%E9%AD%94`
-	err := SendQQMsg("406968503", "lu2000", "382319470", "日你妹的阿阿凡啊\n"+zurl)
+	err := SendQQMsg("4069685031", "tx2000", "1382319470", "日你妹的阿阿凡啊\n"+zurl)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
