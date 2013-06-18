@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/axgle/mahonia"
 	//"github.com/axgle/service"
-	"html"
+	//"html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -19,6 +19,7 @@ import (
 import "math/rand"
 
 var zurl, zw, zsound string
+var zfindMap map[string]string = make(map[string]string)
 var zpath string = vfp.Addbs(vfp.Justpath(vfp.Program()))
 var (
 	user32, _     = syscall.LoadLibrary("user32.dll")
@@ -120,15 +121,34 @@ func DisplayUrl(zurl string) {
 		znot_found := ""
 		//zh, zn := 0, 0
 		zset := false
+		znew_found := ""
+		znew_set := false
+
 		for _, zv = range zwords {
 			//zh++
+			if zv == "" {
+				continue
+			}
 			if At(zv, string(buf_line)) > 0 {
-				if zfound {
-					zfound_word = zfound_word + "," + zv
+				_, zok := zfindMap[zv]
+				if !zok {
+					if znew_set {
+						znew_found = znew_found + "," + zv
+					} else {
+						znew_found = znew_found + zv
+					}
+					znew_set = true
+					zfindMap[zv] = zv
 				} else {
-					zfound_word = zfound_word + zv
+					if zfound {
+						zfound_word = zfound_word + "," + zv
+					} else {
+						zfound_word = zfound_word + zv
+					}
+
 				}
 				zfound = true
+
 				//zn++
 			} else {
 				if zset {
@@ -139,12 +159,14 @@ func DisplayUrl(zurl string) {
 				zset = true
 			}
 		}
-		zmind := ""
-		if znot_found != "" {
-			zmind = "未找到:" + znot_found + "\n未找全，隔10分钟继续下一轮查找\n"
-		} else {
-			zmind = "已经找全了，隔10分钟继续下一轮查找\n"
-		}
+
+		//zmind := ""
+
+		//if znot_found != "" {
+		//	zmind = "未找到:" + znot_found + "\n未找全，隔10分钟继续下一轮查找\n"
+		//} else {
+		//	zmind = "已经找全了，隔10分钟继续下一轮查找\n"
+		//}
 
 		if zfound {
 			fmt.Println("found! ", zv)
@@ -153,12 +175,19 @@ func DisplayUrl(zurl string) {
 			zuin_b, _ := vfp.Filetostr(zpath + "uin.txt")
 			zun_b, _ := vfp.Filetostr(zpath + "un.txt")
 			zpass_b, _ := vfp.Filetostr(zpath + "pass.txt")
+
 			SendQQMsg(readStr(zuin_b), readStr(zpass_b), readStr(zun_b),
-				"x6.GoLang~\n"+
-					fmt.Sprintf("%v\n", vfp.Datetime())+
-					"找到: "+zfound_word+" \n"+
-					zmind+
-					`url: `+html.EscapeString(zurl))
+				"新找到: "+znew_found+" \n"+
+					"已找到: "+zfound_word+" \n"+
+					"未找到: "+znot_found+" \n")
+
+			//SendQQMsg(readStr(zuin_b), readStr(zpass_b), readStr(zun_b),
+			//	"x6.GoLang~\n"+
+			//		fmt.Sprintf("%v\n", vfp.Datetime())+
+			//		"找到: "+zfound_word+" \n"+
+			//		zmind+
+			//		`url: `+html.EscapeString(zurl))
+
 			//MessageBox("查找结果", "找到了\n"+zw, 0)
 			//if zn == zh {
 			//	break
@@ -204,7 +233,7 @@ func SendQQMsg(zuin, zpass_md5, zun, zmsg string) error {
 	xrand = fmt.Sprintf("%v", rand.Intn(200))
 
 	poststring = `VER=1.4&CMD=CLTMSG&SEQ=` + xrand + `&UIN=` + zuin +
-		`&UN=` + zun + `&MG=` + zmsg + xrand
+		`&UN=` + zun + `&MG=` + zmsg
 	r, err = http.Post(host, posttype, strings.NewReader(poststring))
 	if err != nil {
 		return err
