@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"syscall"
+
 	"time"
-	"unsafe"
+
 	"vfp"
 )
 import "math/rand"
@@ -21,10 +21,6 @@ import "math/rand"
 var zurl, zw, zsound string
 var zfindMap map[string]string = make(map[string]string)
 var zpath string = vfp.Addbs(vfp.Justpath(vfp.Program()))
-var (
-	user32, _     = syscall.LoadLibrary("user32.dll")
-	messageBox, _ = syscall.GetProcAddress(user32, "MessageBoxW")
-)
 
 func checkError(err interface{}) {
 	if err != nil {
@@ -170,7 +166,7 @@ func DisplayUrl(zurl string) {
 
 		if zfound {
 			fmt.Println("found! ", zv)
-			go vfp.PlayX(zsound)
+			go PlaySound(zsound)
 
 			zuin_b, _ := vfp.Filetostr(zpath + "uin.txt")
 			zun_b, _ := vfp.Filetostr(zpath + "un.txt")
@@ -202,15 +198,6 @@ func DisplayUrl(zurl string) {
 }
 func At(zsubstring, zwholestring string) int {
 	return strings.Index(zwholestring, zsubstring) + 1
-}
-
-func MessageBox(caption, text string, style uintptr) (result int) {
-	ret, _, _ := syscall.Syscall6(uintptr(messageBox),
-		6, 0,
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))),
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(caption))),
-		style, 0, 0)
-	return int(ret)
 }
 
 func SendQQMsg(zuin, zpass_md5, zun, zmsg string) error {
