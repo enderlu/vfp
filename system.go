@@ -113,21 +113,3 @@ func Md5(zstrArg interface{}) string {
 func OS() string {
 	return "window"
 }
-
-func MustLoadLibrary(name string) uintptr {
-	lib, err := syscall.LoadLibrary(name)
-	if err != nil {
-		panic(err)
-	}
-
-	return uintptr(lib)
-}
-
-func MustGetProcAddress(lib uintptr, name string) uintptr {
-	addr, err := syscall.GetProcAddress(syscall.Handle(lib), name)
-	if err != nil {
-		panic(err)
-	}
-
-	return uintptr(addr)
-}

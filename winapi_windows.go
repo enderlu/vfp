@@ -89,3 +89,21 @@ func PlaySound(pszSound string, hmod HMODULE, fdwSound DWORD) BOOL {
 type Mst struct {
 	Data [20]byte
 }
+
+func MustLoadLibrary(name string) uintptr {
+	lib, err := syscall.LoadLibrary(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return uintptr(lib)
+}
+
+func MustGetProcAddress(lib uintptr, name string) uintptr {
+	addr, err := syscall.GetProcAddress(syscall.Handle(lib), name)
+	if err != nil {
+		panic(err)
+	}
+
+	return uintptr(addr)
+}
