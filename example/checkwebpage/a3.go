@@ -6,12 +6,12 @@ import (
 	"os"
 	//"vfp"
 )
-
+ 
 func main() {
 	var displayName = "check word from page"
 	var desc = "check word from page."
 	var ws, err = service.NewService("m3", displayName, desc)
-
+ 
 	if err != nil {
 		fmt.Printf("%s unable to start: %s", displayName, err)
 		return
