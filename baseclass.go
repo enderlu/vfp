@@ -2,8 +2,6 @@ package vfp
 
 import "reflect"
 
-import "github.com/lxn/walk"
-
 //func CreateObject()  {
 
 //}
@@ -59,12 +57,4 @@ func (b Collection) Clear() error {
 	}
 
 	return nil
-}
-
-type Form struct {
-	*walk.Dialog
-}
-
-type Textbox struct {
-	*walk.LineEdit
 }

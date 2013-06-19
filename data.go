@@ -1,6 +1,6 @@
 package vfp
 
-import "odbc"
+import odbc "github.com/weigj/go-odbc"
 
 import "reflect"
 
