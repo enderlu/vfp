@@ -5,7 +5,6 @@ import "os"
 import "crypto/md5"
 import "fmt"
 import "github.com/axgle/service"
-import "syscall"
 import "bufio"
 
 func Wait() string {
