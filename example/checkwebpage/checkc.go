@@ -17,7 +17,7 @@ import (
 	"vfp"
 )
 import "math/rand"
-//用于测试
+
 var zurl, zw, zsound string
 var zfindMap map[string]string = make(map[string]string)
 var zpath string = vfp.Addbs(vfp.Justpath(vfp.Program()))
