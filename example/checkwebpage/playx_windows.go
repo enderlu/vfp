@@ -1,9 +1,11 @@
 package main
 
-import "vfp"
-import("syscall"
-"unsafe"
+import "github.com/enderlu/vfp"
+import (
+	"syscall"
+	"unsafe"
 )
+
 var (
 	user32, _     = syscall.LoadLibrary("user32.dll")
 	messageBox, _ = syscall.GetProcAddress(user32, "MessageBoxW")

@@ -3,15 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/axgle/service"
+	"github.com/enderlu/vfp"
 	"os"
-	//"vfp"
 )
- 
+
 func main() {
+
+	zser_b, _ := vfp.Filetostr(zpath + "service.txt")
+
 	var displayName = "check word from page"
 	var desc = "check word from page."
-	var ws, err = service.NewService("m3", displayName, desc)
- 
+	var ws, err = service.NewService(readStr(zser_b), displayName, desc)
+
 	if err != nil {
 		fmt.Printf("%s unable to start: %s", displayName, err)
 		return

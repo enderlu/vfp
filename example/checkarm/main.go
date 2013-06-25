@@ -1,3 +1,40 @@
+//package main
+
+//import (
+//	"fmt"
+//	"net/http"
+//)
+
+//func main() {
+//	zurl := `http://tieba.baidu.com/f?kw=%C3%A7%BB%C4%BC%CD`
+//	fmt.Println("\nchecking ...", zurl)
+//	r, err1 := http.Get(zurl)
+
+//	if err1 != nil {
+//		fmt.Println(" arm error:", err1)
+//		return
+//	}
+//	fmt.Println("\n内容:", ReadBody(r))
+//	return
+
+//}
+//func ReadBody(r *http.Response) string {
+//	bs := make([]byte, 512)
+//	defer r.Body.Close()
+//	var buf []byte
+
+//	n, _ := r.Body.Read(bs)
+//	zi := 0
+//	for n > 0 {
+//		if n > 0 {
+//			zi++
+//			buf = append(buf, bs[:n]...)
+//		}
+//		n, _ = r.Body.Read(bs)
+//	}
+//	return string(buf)
+//}
+
 package main
 
 import (
@@ -36,7 +73,7 @@ func readStr(zsound_b []byte) (zsound string) {
 	}
 	return
 }
-func Main_Sit() {
+func main() {
 
 	zsound_b, _ := ioutil.ReadFile(zpath + `sound.txt`)
 	if zsound_b[0] == 239 && zsound_b[1] == 187 && zsound_b[2] == 191 {
@@ -60,7 +97,7 @@ func Main_Sit() {
 	fmt.Print("\nsearch word:", zw)
 
 	go DisplayUrl(zurl)
-	////Wait()
+	Wait()
 
 }
 
@@ -77,6 +114,9 @@ func DisplayUrl(zurl string) {
 		fmt.Println("\nchecking ...", zurl)
 		r, err1 := http.Get(zurl)
 
+		if err1 != nil {
+			fmt.Println(" arm error:", err1)
+		}
 		zcode := vfp.Strextract(r.Header["Content-Type"][0], "charset=", "charset=", 1)
 		zcode = vfp.Lower(zcode)
 		switch zcode {
@@ -85,6 +125,7 @@ func DisplayUrl(zurl string) {
 		default:
 			zcode = "utf8"
 		}
+
 		checkError(err1)
 		fmt.Println("search status :", func() string {
 			if r.StatusCode == 200 {
@@ -166,7 +207,6 @@ func DisplayUrl(zurl string) {
 
 		if znew_set && zfound {
 			fmt.Println("found! ", zv)
-			go PlaySound(zsound)
 
 			zuin_b, _ := vfp.Filetostr(zpath + "uin.txt")
 			zun_b, _ := vfp.Filetostr(zpath + "un.txt")
