@@ -162,3 +162,9 @@ func Saveto(zfile string, zobjs ...interface{}) bool {
 func Restorefrom(zfile string) bool {
 	return true
 }
+
+//Returns the size in bytes of a specified field or file.
+func Fsize(zfile string) int64 {
+	f, _ := os.Stat(zfile)
+	return f.Size()
+}
