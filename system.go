@@ -6,6 +6,7 @@ import "crypto/md5"
 import "fmt"
 import "github.com/axgle/service"
 import "bufio"
+import "runtime"
 
 func Wait() string {
 	reader := bufio.NewReader(os.Stdin)
@@ -110,5 +111,5 @@ func Md5(zstrArg interface{}) string {
 
 //Returns the name and version number of the operating system
 func OS() string {
-	return "window"
+	return runtime.GOOS
 }
