@@ -51,6 +51,7 @@ func savedata(w http.ResponseWriter, req *http.Request) {
 	data := req.FormValue("data")
 	log.Println("保存数据：")
 	log.Println(data)
+	fmt.Fprintf(w, "%v", "成功保存")
 
 }
 
