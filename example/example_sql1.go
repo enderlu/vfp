@@ -1,7 +1,7 @@
 package main
 
 import (
-	"vfp"
+	"github.com/enderlu/vfp"
 )
 
 func main() {

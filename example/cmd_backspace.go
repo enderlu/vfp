@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-import . "vfp"
+import . "github.com/enderlu/vfp"
 import "os"
 
 func main() {

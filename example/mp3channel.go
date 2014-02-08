@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	. "github.com/enderlu/vfp"
 	"os"
-	. "vfp"
 )
 
 var zsong string = ""

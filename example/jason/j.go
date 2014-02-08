@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/enderlu/vfp"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -42,6 +43,7 @@ func Init() {
 		os.Exit(1)
 	}
 
+	fmt.Println(Upper("tt"))
 	defer file.Close()
 
 	dec := json.NewDecoder(file)

@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	. "github.com/enderlu/vfp"
 	"os"
 	"sync"
 	"time"
-	. "vfp"
 )
 
 var zsong string = ""

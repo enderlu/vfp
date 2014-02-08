@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	. "github.com/enderlu/vfp"
 	"os"
-	. "vfp"
 )
 
 var zsong string = ""
 
 func main() {
+
 	fmt.Println("playing sound...")
 
 	zdir := `C:\Kugou\Listen\`
