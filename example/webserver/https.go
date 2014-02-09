@@ -41,6 +41,8 @@ func main() {
 	Init()
 	http.HandleFunc("/", StaticServer)
 	http.HandleFunc("/data1", data1)
+	http.HandleFunc("/getredisdata", getredisdata)
+
 	http.HandleFunc("/savedata", savedata)
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	if err != nil {
@@ -67,6 +69,13 @@ func savedata(w http.ResponseWriter, req *http.Request) {
 
 	var key = "hello"
 	client.Set(key, []byte(data))
+
+}
+func getredisdata(w http.ResponseWriter, req *http.Request) {
+
+	var key = "hello"
+	val, _ := client.Get(key)
+	fmt.Fprintf(w, "%v", string(val))
 }
 
 // 静态文件处理
