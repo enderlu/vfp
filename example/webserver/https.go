@@ -11,6 +11,16 @@ import (
 	_ "path/filepath"
 	"strconv"
 )
+import . "github.com/hoisie/redis"
+import "runtime"
+
+var client Client
+
+func initredis() {
+	runtime.GOMAXPROCS(4)
+	client.Addr = "127.0.0.1:6379"
+	client.Db = 1 //第十三个工作区
+}
 
 var dir string
 var port int
@@ -18,6 +28,7 @@ var staticHandler http.Handler
 
 // 初始化参数
 func Init() {
+
 	dir = path.Dir(os.Args[0])
 	flag.IntVar(&port, "port", 12345, "服务器端口")
 	flag.Parse()
@@ -26,6 +37,7 @@ func Init() {
 
 func main() {
 	println("Server Started!")
+	initredis()
 	Init()
 	http.HandleFunc("/", StaticServer)
 	http.HandleFunc("/data1", data1)
@@ -53,6 +65,8 @@ func savedata(w http.ResponseWriter, req *http.Request) {
 	log.Println(data)
 	fmt.Fprintf(w, "%v", "成功保存")
 
+	var key = "hello"
+	client.Set(key, []byte(data))
 }
 
 // 静态文件处理
