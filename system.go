@@ -17,7 +17,7 @@ func Wait() string {
 
 //Run
 func Run(zfile string, zwait_arg ...bool) (zerr error) {
-
+	//run test
 	zwait := false
 	if len(zwait_arg) > 0 {
 		zwait = zwait_arg[0]
